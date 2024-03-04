@@ -20,7 +20,7 @@ public class Post {
     String url;
     String caption;
 
-//    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true,mappedBy = "post")
 //    @JoinColumn(name = "fk_post_id",referencedColumnName = "post_id")
-//    List<Comment> comments;
+    List<Comment> comments;
 }

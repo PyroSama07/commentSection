@@ -2,56 +2,45 @@ package com.aspire.comment.controller;
 
 import com.aspire.comment.models.Comment;
 import com.aspire.comment.repository.CommentRepository;
-import com.aspire.comment.repository.PostRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.Optional;
 
 @RestController
+@Slf4j
 @RequestMapping("/comment")
 public class CommentController {
 
     CommentRepository commentRepository;
-    PostRepository postRepository;
     @Autowired
-    CommentController(PostRepository postRepository, CommentRepository commentRepository){
-        this.commentRepository = commentRepository;
-        this.postRepository = postRepository;
+    CommentController(CommentRepository commentRepository){
+        this.commentRepository=commentRepository;
     }
 
     @PostMapping("/addComment")
-    public void addComment(@RequestParam String body, @RequestParam int postId, @RequestParam int parentCommentId){
-        Comment comment = new Comment();
-        comment.setBody(body);
-        comment.setPostId(postId);
-        comment.setParentCommentId(parentCommentId);
+    public void addComment(@RequestBody Comment comment){
         commentRepository.save(comment);
     }
 
-    @GetMapping("/getComments")
-    public Comment getComments(@RequestParam int postId){
-        List<Comment> comments = commentRepository.getCommentsOfPost(postId);
-        HashMap<Integer, Comment> commentsSet = new HashMap<>();
-        Comment rootComment = new Comment();
-        rootComment.setCommentId(-1);
-        rootComment.setReplies(new HashSet<>());
-        commentsSet.put(-1,rootComment);
+    @GetMapping("/getAllComments")
+    public Iterable<Comment> getAllComments(){
+        return commentRepository.findAll();
+    }
 
-        for (Comment comment:comments){
-            int id = comment.getCommentId();
-            comment.setReplies(new HashSet<>());
-            commentsSet.put(id,comment);
-        }
+    @PostMapping("/deleteComment")
+    public void deleteComment(@RequestParam int id){
+        commentRepository.deleteById(id);
+    }
 
-        for (Map.Entry<Integer,Comment> commentEntry : commentsSet.entrySet()){
-            Comment comment = commentEntry.getValue();
-            Comment parent = commentsSet.get(comment.getParentCommentId());
-            if (parent==null) continue;
-            HashSet<Comment> replies = parent.getReplies();
-            replies.add(comment);
-            parent.setReplies(replies);
-        }
-        return rootComment;
+    @GetMapping("/getComment")
+    public Optional<Comment> getComment(@RequestParam int id){
+        return commentRepository.findById(id);
+    }
+
+    @PostMapping("/deleteAllComments")
+    public void deleteAllComments(){
+        commentRepository.deleteAll();
     }
 }

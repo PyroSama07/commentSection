@@ -1,22 +1,21 @@
 package com.aspire.comment.controller;
 
 import com.aspire.comment.models.Post;
-import com.aspire.comment.repository.CommentRepository;
 import com.aspire.comment.repository.PostRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @Slf4j
 @RequestMapping("/post")
 public class PostController {
 
-    CommentRepository commentRepository;
     PostRepository postRepository;
     @Autowired
-    PostController(PostRepository postRepository, CommentRepository commentRepository){
-        this.commentRepository=commentRepository;
+    PostController(PostRepository postRepository){
         this.postRepository=postRepository;
     }
 
@@ -25,8 +24,22 @@ public class PostController {
         postRepository.save(post);
     }
 
-    @GetMapping("/getPosts")
-    public Iterable<Post> getPosts(){
+    @GetMapping("/getAllPosts")
+    public Iterable<Post> getAllPosts(){
         return postRepository.findAll();
+    }
+
+    @GetMapping("getPost")
+    public Optional<Post> getPost(int postId){
+        return postRepository.findById(postId);
+    }
+    @PostMapping("/deleteALlPosts")
+    public void deleteAllPosts(){
+        postRepository.deleteAll();
+    }
+
+    @PostMapping("/deletePost")
+    public void deletePost(int postId){
+        postRepository.deleteById(postId);
     }
 }

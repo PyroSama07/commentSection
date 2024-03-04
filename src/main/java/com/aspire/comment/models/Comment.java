@@ -1,10 +1,13 @@
 package com.aspire.comment.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.HashSet;
 import java.util.List;
@@ -13,30 +16,35 @@ import java.util.List;
 @Getter
 @ToString
 @Entity
-@Table(name="comment")
+@Table(name = "comment")
 public class Comment {
-
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
-    @Column(name="comment_id")
+    @GeneratedValue
+    @Column(name = "comment_id")
     int commentId;
     String body;
-    @Column(name="parent_comment_id")
-    int parentCommentId;
-    @Column(name="post_id")
-    int postId;
 
-    @Transient
-    HashSet<Comment> replies;
+    @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JoinColumn(name="parent_comment_id",referencedColumnName = "comment_id")
+    Comment parent;
 
-//    @ManyToOne(fetch = FetchType.LAZY, optional=true)
-//    @JoinColumn(name="parent_id")
-//    Comment parent;
-//
-//    @OneToMany(mappedBy="parent", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval=true)
-//    List<Comment> children;
-//    @JsonIgnore
-//    public List<Comment> getChildren() {
-//        return children;
-//    }
+    @OneToMany(mappedBy = "parent")
+    List<Comment> replies;
+
+    @ManyToOne
+    @JoinColumn(name = "fk_post_id",referencedColumnName = "post_id")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    Post post;
+
+    @JsonIgnore
+    Comment getParent(){
+        return parent;
+    }
+
+    @JsonIgnore
+    Post getPost(){
+        return post;
+    }
 }
